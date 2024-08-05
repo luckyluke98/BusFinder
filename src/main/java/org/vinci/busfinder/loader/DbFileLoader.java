@@ -37,13 +37,18 @@ public class DbFileLoader implements CommandLineRunner {
     @Autowired
     private Job load_shape_table;
 
+    @Qualifier("stopJob")
+    @Autowired
+    private Job load_stop_table;
+
     @Override
     public void run(String... args) throws Exception {
         if (Boolean.TRUE.equals(load)) {
             jobLauncher.run(load_agency_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
             jobLauncher.run(load_calendar_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
             jobLauncher.run(load_route_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
-            jobLauncher.run(load_shape_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
+            //jobLauncher.run(load_shape_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
+            jobLauncher.run(load_stop_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
         }
     }
 }

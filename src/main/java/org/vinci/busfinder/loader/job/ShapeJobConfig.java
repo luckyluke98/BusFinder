@@ -16,12 +16,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.vinci.busfinder.dto.RouteDto;
 import org.vinci.busfinder.dto.ShapeDto;
-import org.vinci.busfinder.loader.listener.AgencyLoaderListener;
-import org.vinci.busfinder.loader.listener.RouteLoaderListener;
 import org.vinci.busfinder.loader.listener.ShapeLoaderListener;
-import org.vinci.busfinder.repository.RouteRepository;
 import org.vinci.busfinder.repository.ShapeRepository;
 
 import java.nio.file.Files;

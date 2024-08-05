@@ -1,54 +1,38 @@
-package org.vinci.busfinder.model;
+package org.vinci.busfinder.dto;
 
-import jakarta.persistence.*;
+public class StopDto {
 
-import java.util.Set;
-
-@Entity
-@Table(name = "stops")
-public class Stop {
-
-    @Id
-    @Column(name = "stop_id")
     private int stopId;
-
-    @Column(name = "stop_code")
     private int stopCode;
-
-    @Column(name = "stop_name")
     private String stopName;
-
-    @Column(name = "stop_desc")
     private String stopDescription;
-
-    @Column(name = "stop_lat")
     private String stopLat;
-
-    @Column(name = "stop_lon")
     private String stopLong;
-
-    @Column(name = "zone_id")
     private String zoneId;
-
-    @Column(name = "stop_url")
     private String stopUrl;
-
-    @Column(name = "location_type")
     private String locationType;
-
-    @Column(name = "parent_station")
     private String parentStation;
-
-    @Column(name = "stop_timezone")
     private String stopTimezone;
-
-    @Column(name = "wheelchair_boarding")
     private String wheelchairBoarding;
 
-    @OneToMany(mappedBy = "stop")
-    private Set<StopTimes> stopTimes;
+    public StopDto() {}
 
-    public Stop() {}
+    public StopDto(int stopId, int stopCode, String stopName, String stopDescription, String stopLat, String stopLong,
+                   String zoneId, String stopUrl, String locationType, String parentStation, String stopTimezone,
+                   String wheelchairBoarding) {
+        this.stopId = stopId;
+        this.stopCode = stopCode;
+        this.stopName = stopName;
+        this.stopDescription = stopDescription;
+        this.stopLat = stopLat;
+        this.stopLong = stopLong;
+        this.zoneId = zoneId;
+        this.stopUrl = stopUrl;
+        this.locationType = locationType;
+        this.parentStation = parentStation;
+        this.stopTimezone = stopTimezone;
+        this.wheelchairBoarding = wheelchairBoarding;
+    }
 
     @Override
     public String toString() {
