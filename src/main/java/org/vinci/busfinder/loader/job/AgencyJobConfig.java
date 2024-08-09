@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.vinci.busfinder.dto.AgencyDto;
 import org.vinci.busfinder.loader.listener.AgencyLoaderListener;
 import org.vinci.busfinder.model.Agency;
 import org.vinci.busfinder.repository.AgencyRepository;
@@ -24,7 +23,6 @@ import org.vinci.busfinder.repository.AgencyRepository;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 @Configuration
 public class AgencyJobConfig extends BaseJobConfig {
@@ -38,12 +36,12 @@ public class AgencyJobConfig extends BaseJobConfig {
     AgencyRepository agencyRepository;
 
     @Bean
-    public FlatFileItemReader<AgencyDto> agencyReader() {
+    public FlatFileItemReader<Agency> agencyReader() {
         Path path = Paths.get(super.inputPath + inputFileName);
         if(!Files.exists(path))
             throw new RuntimeException("[Error] Input file not found: " + super.inputPath + inputFileName);
 
-        return new FlatFileItemReaderBuilder<AgencyDto>()
+        return new FlatFileItemReaderBuilder<Agency>()
                 .linesToSkip(1)
                 .name("agency-reader")
                 .resource(new FileSystemResource(super.inputPath + inputFileName))
@@ -51,7 +49,7 @@ public class AgencyJobConfig extends BaseJobConfig {
                 .delimiter(",")
                 .names("agency_id","agency_name","agency_url","agency_timezone","agency_lang","agency_phone","agency_fare_url")
                 .fieldSetMapper(fieldSet -> {
-                    AgencyDto a = new AgencyDto();
+                    Agency a = new Agency();
                     a.setAgencyId(fieldSet.readString("agency_id"));
                     a.setAgencyName(fieldSet.readString("agency_name"));
                     a.setAgencyUrl(fieldSet.readString("agency_url"));
@@ -65,17 +63,17 @@ public class AgencyJobConfig extends BaseJobConfig {
     }
 
     @Bean
-    public ItemWriter<AgencyDto> agencyWriter(){
+    public ItemWriter<Agency> agencyWriter(){
         return agencies -> {
             agencies.forEach(a -> log.info("Saving Agency Records: " + a.toString()));
-            agencyRepository.saveAllRaw((List<AgencyDto>) agencies.getItems());
+            agencyRepository.saveAll(agencies);
         };
     }
 
     @Bean
     public Step agencyStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder("load_agency_item", jobRepository)
-                .<AgencyDto,AgencyDto>chunk(2, transactionManager)
+                .<Agency,Agency>chunk(2, transactionManager)
                 .reader(agencyReader())
                 .writer(agencyWriter())
                 .build();

@@ -16,15 +16,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.vinci.busfinder.dto.RouteDto;
-import org.vinci.busfinder.loader.listener.AgencyLoaderListener;
 import org.vinci.busfinder.loader.listener.RouteLoaderListener;
+import org.vinci.busfinder.model.Route;
 import org.vinci.busfinder.repository.RouteRepository;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 @Configuration
 public class RouteJobConfig extends BaseJobConfig {
@@ -37,12 +35,12 @@ public class RouteJobConfig extends BaseJobConfig {
     RouteRepository routeRepository;
 
     @Bean
-    public FlatFileItemReader<RouteDto> routeReader() {
+    public FlatFileItemReader<Route> routeReader() {
         Path path = Paths.get(super.inputPath + inputFileName);
         if(!Files.exists(path))
             throw new RuntimeException("[Error] Input file not found: " + super.inputPath + inputFileName);
 
-        return new FlatFileItemReaderBuilder<RouteDto>()
+        return new FlatFileItemReaderBuilder<Route>()
                 .linesToSkip(1)
                 .name("route-reader")
                 .resource(new FileSystemResource(super.inputPath + inputFileName))
@@ -50,7 +48,7 @@ public class RouteJobConfig extends BaseJobConfig {
                 .delimiter(",")
                 .names("route_id","agency_id","route_short_name","route_long_name","route_desc","route_type","route_url","route_color","route_text_color")
                 .fieldSetMapper(fieldSet -> {
-                    RouteDto r = new RouteDto();
+                    Route r = new Route();
                     r.setRouteId(fieldSet.readInt("route_id"));
                     r.setAgencyId(fieldSet.readString("agency_id"));
                     r.setRouteShortName(fieldSet.readString("route_short_name"));
@@ -66,17 +64,17 @@ public class RouteJobConfig extends BaseJobConfig {
     }
 
     @Bean
-    public ItemWriter<RouteDto> routeWriter(){
+    public ItemWriter<Route> routeWriter(){
         return routes -> {
             routes.forEach(r -> log.info("Saving Route Records: " + r.toString()));
-            routeRepository.saveAllRaw((List<RouteDto>) routes.getItems());
+            routeRepository.saveAll(routes);
         };
     }
 
     @Bean
     public Step routeStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder("load_route_item", jobRepository)
-                .<RouteDto,RouteDto>chunk(2, transactionManager)
+                .<Route,Route>chunk(2, transactionManager)
                 .reader(routeReader())
                 .writer(routeWriter())
                 .build();

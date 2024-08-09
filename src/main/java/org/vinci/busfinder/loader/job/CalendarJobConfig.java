@@ -16,14 +16,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.vinci.busfinder.dto.CalendarDto;
 import org.vinci.busfinder.loader.listener.CalendarLoaderListener;
+import org.vinci.busfinder.model.Calendar;
 import org.vinci.busfinder.repository.CalendarRepository;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Configuration
 public class CalendarJobConfig extends BaseJobConfig {
@@ -37,12 +38,12 @@ public class CalendarJobConfig extends BaseJobConfig {
     CalendarRepository calendarRepository;
 
     @Bean
-    public FlatFileItemReader<CalendarDto> calendarReader() {
+    public FlatFileItemReader<Calendar> calendarReader() {
         Path path = Paths.get(super.inputPath + inputFileName);
         if(!Files.exists(path))
             throw new RuntimeException("[Error] Input file not found: " + super.inputPath + inputFileName);
 
-        return new FlatFileItemReaderBuilder<CalendarDto>()
+        return new FlatFileItemReaderBuilder<Calendar>()
                 .linesToSkip(1)
                 .name("calendar-reader")
                 .resource(new FileSystemResource(super.inputPath + inputFileName))
@@ -50,7 +51,7 @@ public class CalendarJobConfig extends BaseJobConfig {
                 .delimiter(",")
                 .names("service_id","monday","tuesday","wednesday","thursday","friday","saturday","sunday","start_date","end_date")
                 .fieldSetMapper(fieldSet -> {
-                    CalendarDto c = new CalendarDto();
+                    Calendar c = new Calendar();
                     c.setServiceId(fieldSet.readString("service_id"));
                     c.setMonday(fieldSet.readBoolean("monday"));
                     c.setTuesday(fieldSet.readBoolean("tuesday"));
@@ -59,25 +60,25 @@ public class CalendarJobConfig extends BaseJobConfig {
                     c.setFriday(fieldSet.readBoolean("friday"));
                     c.setSaturday(fieldSet.readBoolean("saturday"));
                     c.setSunday(fieldSet.readBoolean("sunday"));
-                    c.setStartDate(fieldSet.readString("start_date"));
-                    c.setEndDate(fieldSet.readString("end_date"));
+                    c.setStartDate(LocalDate.parse(fieldSet.readString("start_date"), DateTimeFormatter.ofPattern("yyyyMMdd")));
+                    c.setEndDate(LocalDate.parse(fieldSet.readString("end_date"), DateTimeFormatter.ofPattern("yyyyMMdd")));
                     return c;
                 })
                 .build();
     }
 
     @Bean
-    public ItemWriter<CalendarDto> calendarWriter(){
+    public ItemWriter<Calendar> calendarWriter(){
         return calendars -> {
             calendars.forEach(c -> log.info("Saving Calendar Records: " + c.toString()));
-            calendarRepository.saveAllRaw((List<CalendarDto>) calendars.getItems());
+            calendarRepository.saveAll(calendars);
         };
     }
 
     @Bean
     public Step calendarStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder("load_calendar_item", jobRepository)
-                .<CalendarDto,CalendarDto>chunk(2, transactionManager)
+                .<Calendar,Calendar>chunk(2, transactionManager)
                 .reader(calendarReader())
                 .writer(calendarWriter())
                 .build();

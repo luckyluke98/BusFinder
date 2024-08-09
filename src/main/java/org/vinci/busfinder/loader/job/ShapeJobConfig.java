@@ -16,14 +16,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.vinci.busfinder.dto.ShapeDto;
 import org.vinci.busfinder.loader.listener.ShapeLoaderListener;
+import org.vinci.busfinder.model.Shape;
 import org.vinci.busfinder.repository.ShapeRepository;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 @Configuration
 public class ShapeJobConfig extends BaseJobConfig {
@@ -36,12 +35,12 @@ public class ShapeJobConfig extends BaseJobConfig {
     ShapeRepository shapeRepository;
 
     @Bean
-    public FlatFileItemReader<ShapeDto> shapeReader() {
+    public FlatFileItemReader<Shape> shapeReader() {
         Path path = Paths.get(super.inputPath + inputFileName);
         if(!Files.exists(path))
             throw new RuntimeException("[Error] Input file not found: " + super.inputPath + inputFileName);
 
-        return new FlatFileItemReaderBuilder<ShapeDto>()
+        return new FlatFileItemReaderBuilder<Shape>()
                 .linesToSkip(1)
                 .name("shape-reader")
                 .resource(new FileSystemResource(super.inputPath + inputFileName))
@@ -49,7 +48,7 @@ public class ShapeJobConfig extends BaseJobConfig {
                 .delimiter(",")
                 .names("shape_id","shape_pt_lat","shape_pt_lon","shape_pt_sequence","shape_dist_traveled")
                 .fieldSetMapper(fieldSet -> {
-                    ShapeDto s = new ShapeDto();
+                    Shape s = new Shape();
                     s.setShapeId(fieldSet.readString("shape_id"));
                     s.setShapePtLat(fieldSet.readString("shape_pt_lat"));
                     s.setShapePtLon(fieldSet.readString("shape_pt_lon"));
@@ -61,17 +60,17 @@ public class ShapeJobConfig extends BaseJobConfig {
     }
 
     @Bean
-    public ItemWriter<ShapeDto> shapeWriter(){
+    public ItemWriter<Shape> shapeWriter(){
         return shapes -> {
             //shapes.forEach(s -> log.info("Saving Shape Records: " + s.toString()));
-            shapeRepository.saveAllRaw((List<ShapeDto>) shapes.getItems());
+            shapeRepository.saveAll(shapes);
         };
     }
 
     @Bean
     public Step shapeStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder("load_shape_item", jobRepository)
-                .<ShapeDto,ShapeDto>chunk(2, transactionManager)
+                .<Shape,Shape>chunk(2, transactionManager)
                 .reader(shapeReader())
                 .writer(shapeWriter())
                 .build();

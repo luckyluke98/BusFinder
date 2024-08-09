@@ -12,16 +12,6 @@ public class StopTimes {
     @EmbeddedId
     private StopTimesKey id;
 
-    @ManyToOne
-    @MapsId("stopId")
-    @JoinColumn(name = "stop_id")
-    private Stop stop;
-
-    @ManyToOne
-    @MapsId("tripId")
-    @JoinColumn(name = "trip_id")
-    private Trip trip;
-
     @Column(name = "arrival_time", columnDefinition = "TIME")
     private LocalTime arrivalTime;
 
@@ -48,22 +38,6 @@ public class StopTimes {
                 "StopTimes[trip_id=%d, stop_id=%d, arrival_time=%s, departure_time=%s, stop_seq=%d, stop_headsign=%s]",
                 id.getTripId(), id.getStopId(), arrivalTime.toString(), departureTime.toString(), id.getStopSeq(), stopHeadsign
         );
-    }
-
-    public Stop getStop() {
-        return stop;
-    }
-
-    public void setStop(Stop stop) {
-        this.stop = stop;
-    }
-
-    public Trip getTrip() {
-        return trip;
-    }
-
-    public void setTrip(Trip trip) {
-        this.trip = trip;
     }
 
     public StopTimesKey getId() {

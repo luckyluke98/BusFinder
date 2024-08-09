@@ -2,8 +2,6 @@ package org.vinci.busfinder.model;
 
 import jakarta.persistence.*;
 
-import java.util.Set;
-
 @Entity
 @Table(name = "stops")
 public class Stop {
@@ -44,9 +42,6 @@ public class Stop {
 
     @Column(name = "wheelchair_boarding")
     private String wheelchairBoarding;
-
-    @OneToMany(mappedBy = "stop")
-    private Set<StopTimes> stopTimes;
 
     public Stop() {}
 

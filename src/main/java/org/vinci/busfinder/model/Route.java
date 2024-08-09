@@ -10,9 +10,8 @@ public class Route {
     @Column(name = "route_id")
     private int routeId;
 
-    @ManyToOne(cascade=CascadeType.ALL)
-    @JoinColumn(name = "agency_id")
-    private Agency agency;
+    @Column(name = "agency_id")
+    private String agencyId;
 
     @Column(name = "route_short_name")
     private String routeShortName;
@@ -53,12 +52,12 @@ public class Route {
         this.routeId = routeId;
     }
 
-    public Agency getAgencyId() {
-        return agency;
+    public String getAgencyId() {
+        return agencyId;
     }
 
-    public void setAgencyId(Agency agency) {
-        this.agency = agency;
+    public void setAgencyId(String agencyId) {
+        this.agencyId = agencyId;
     }
 
     public String getRouteShortName() {

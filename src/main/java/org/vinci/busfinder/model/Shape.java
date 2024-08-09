@@ -7,10 +7,6 @@ import jakarta.persistence.*;
 public class Shape {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private int id;
-
     @Column(name = "shape_id")
     private String shapeId;
 

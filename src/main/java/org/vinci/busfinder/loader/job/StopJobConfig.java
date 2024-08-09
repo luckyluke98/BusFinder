@@ -16,17 +16,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.vinci.busfinder.dto.ShapeDto;
-import org.vinci.busfinder.dto.StopDto;
-import org.vinci.busfinder.loader.listener.ShapeLoaderListener;
 import org.vinci.busfinder.loader.listener.StopLoaderListener;
-import org.vinci.busfinder.repository.ShapeRepository;
+import org.vinci.busfinder.model.Stop;
 import org.vinci.busfinder.repository.StopRepository;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 @Configuration
 public class StopJobConfig extends BaseJobConfig {
@@ -40,12 +36,12 @@ public class StopJobConfig extends BaseJobConfig {
     StopRepository stopRepository;
 
     @Bean
-    public FlatFileItemReader<StopDto> stopReader() {
+    public FlatFileItemReader<Stop> stopReader() {
         Path path = Paths.get(super.inputPath + inputFileName);
         if(!Files.exists(path))
             throw new RuntimeException("[Error] Input file not found: " + super.inputPath + inputFileName);
 
-        return new FlatFileItemReaderBuilder<StopDto>()
+        return new FlatFileItemReaderBuilder<Stop>()
                 .linesToSkip(1)
                 .name("stop-reader")
                 .resource(new FileSystemResource(super.inputPath + inputFileName))
@@ -54,7 +50,7 @@ public class StopJobConfig extends BaseJobConfig {
                 .names("stop_id","stop_code","stop_name","stop_desc","stop_lat","stop_lon","zone_id","stop_url",
                         "location_type","parent_station","stop_timezone","wheelchair_boarding")
                 .fieldSetMapper(fieldSet -> {
-                    StopDto s = new StopDto();
+                    Stop s = new Stop();
                     s.setStopId(fieldSet.readInt("stop_id"));
                     s.setStopCode(fieldSet.readInt("stop_code"));
                     s.setStopName(fieldSet.readString("stop_name"));
@@ -73,17 +69,17 @@ public class StopJobConfig extends BaseJobConfig {
     }
 
     @Bean
-    public ItemWriter<StopDto> stopWriter(){
+    public ItemWriter<Stop> stopWriter(){
         return stops -> {
             stops.forEach(s -> log.info("Saving Stop Records: " + s.toString()));
-            stopRepository.saveAllRaw((List<StopDto>) stops.getItems());
+            stopRepository.saveAll(stops);
         };
     }
 
     @Bean
     public Step stopStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         return new StepBuilder("load_stop_item", jobRepository)
-                .<StopDto,StopDto>chunk(2, transactionManager)
+                .<Stop,Stop>chunk(2, transactionManager)
                 .reader(stopReader())
                 .writer(stopWriter())
                 .build();
