@@ -45,6 +45,10 @@ public class DbFileLoader implements CommandLineRunner {
     @Autowired
     private Job load_trip_table;
 
+    @Qualifier("stopTimesJob")
+    @Autowired
+    private Job load_stoptimes_table;
+
     @Override
     public void run(String... args) throws Exception {
         if (Boolean.TRUE.equals(load)) {
@@ -54,6 +58,7 @@ public class DbFileLoader implements CommandLineRunner {
             jobLauncher.run(load_shape_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
             jobLauncher.run(load_stop_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
             jobLauncher.run(load_trip_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
+            jobLauncher.run(load_stoptimes_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
         }
     }
 }

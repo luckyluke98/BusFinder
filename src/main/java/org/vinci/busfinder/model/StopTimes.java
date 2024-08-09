@@ -13,10 +13,10 @@ public class StopTimes {
     private StopTimesKey id;
 
     @Column(name = "arrival_time", columnDefinition = "TIME")
-    private LocalTime arrivalTime;
+    private String arrivalTime;
 
     @Column(name = "departure_time", columnDefinition = "TIME")
-    private LocalTime departureTime;
+    private String departureTime;
 
     @Column(name = "stop_Headsign")
     private String stopHeadsign;
@@ -48,19 +48,19 @@ public class StopTimes {
         this.id = id;
     }
 
-    public LocalTime getArrivalTime() {
+    public String getArrivalTime() {
         return arrivalTime;
     }
 
-    public void setArrivalTime(LocalTime arrivalTime) {
+    public void setArrivalTime(String arrivalTime) {
         this.arrivalTime = arrivalTime;
     }
 
-    public LocalTime getDepartureTime() {
+    public String getDepartureTime() {
         return departureTime;
     }
 
-    public void setDepartureTime(LocalTime departureTime) {
+    public void setDepartureTime(String departureTime) {
         this.departureTime = departureTime;
     }
 
