@@ -7,4 +7,9 @@ public class BaseJobConfig {
     @Value("${dbloader.config.input-path}")
     protected String inputPath;
 
+    @Value("${dbloader.config.verbose}")
+    protected Boolean verbose;
+
+
+
 }

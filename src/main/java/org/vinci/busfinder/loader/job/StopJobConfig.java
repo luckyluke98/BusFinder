@@ -71,7 +71,11 @@ public class StopJobConfig extends BaseJobConfig {
     @Bean
     public ItemWriter<Stop> stopWriter(){
         return stops -> {
-            stops.forEach(s -> log.info("Saving Stop Records: " + s.toString()));
+            if (verbose) {
+                stops.forEach(s -> log.info("Saving Stop Records: " + s.toString()));
+            } else {
+                log.info("Saving Stop Records...");
+            }
             stopRepository.saveAll(stops);
         };
     }

@@ -62,7 +62,11 @@ public class ShapeJobConfig extends BaseJobConfig {
     @Bean
     public ItemWriter<Shape> shapeWriter(){
         return shapes -> {
-            //shapes.forEach(s -> log.info("Saving Shape Records: " + s.toString()));
+            if (verbose) {
+                shapes.forEach(s -> log.info("Saving Shape Records: " + s.toString()));
+            } else {
+                log.info("Saving Shape Records...");
+            }
             shapeRepository.saveAll(shapes);
         };
     }

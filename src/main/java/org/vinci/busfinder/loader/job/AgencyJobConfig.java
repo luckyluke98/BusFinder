@@ -65,7 +65,11 @@ public class AgencyJobConfig extends BaseJobConfig {
     @Bean
     public ItemWriter<Agency> agencyWriter(){
         return agencies -> {
-            agencies.forEach(a -> log.info("Saving Agency Records: " + a.toString()));
+            if (verbose) {
+                agencies.forEach(a -> log.info("Saving Agency Records: " + a.toString()));
+            } else {
+                log.info("Saving Agency Records...");
+            }
             agencyRepository.saveAll(agencies);
         };
     }

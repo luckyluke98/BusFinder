@@ -70,7 +70,11 @@ public class CalendarJobConfig extends BaseJobConfig {
     @Bean
     public ItemWriter<Calendar> calendarWriter(){
         return calendars -> {
-            calendars.forEach(c -> log.info("Saving Calendar Records: " + c.toString()));
+            if (verbose) {
+                calendars.forEach(c -> log.info("Saving Calendar Records: " + c.toString()));
+            } else {
+                log.info("Saving Calendar Records...");
+            }
             calendarRepository.saveAll(calendars);
         };
     }

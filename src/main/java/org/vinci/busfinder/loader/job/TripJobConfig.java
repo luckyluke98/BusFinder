@@ -68,7 +68,11 @@ public class TripJobConfig extends BaseJobConfig {
     @Bean
     public ItemWriter<Trip> tripWriter(){
         return trips -> {
-            trips.forEach(s -> log.info("Saving Trip Records: " + s.toString()));
+            if (verbose) {
+                trips.forEach(s -> log.info("Saving Trip Records: " + s.toString()));
+            } else {
+                log.info("Saving Trip Records...");
+            }
             tripRepository.saveAll(trips);
         };
     }

@@ -66,7 +66,11 @@ public class RouteJobConfig extends BaseJobConfig {
     @Bean
     public ItemWriter<Route> routeWriter(){
         return routes -> {
-            routes.forEach(r -> log.info("Saving Route Records: " + r.toString()));
+            if (verbose) {
+                routes.forEach(r -> log.info("Saving Route Records: " + r.toString()));
+            } else {
+                log.info("Saving Route Records...");
+            }
             routeRepository.saveAll(routes);
         };
     }
