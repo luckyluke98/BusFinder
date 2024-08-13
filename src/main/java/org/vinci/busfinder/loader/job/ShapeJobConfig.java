@@ -18,6 +18,7 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.vinci.busfinder.loader.listener.ShapeLoaderListener;
 import org.vinci.busfinder.model.Shape;
+import org.vinci.busfinder.model.key.ShapeKey;
 import org.vinci.busfinder.repository.ShapeRepository;
 
 import java.nio.file.Files;
@@ -48,11 +49,14 @@ public class ShapeJobConfig extends BaseJobConfig {
                 .delimiter(",")
                 .names("shape_id","shape_pt_lat","shape_pt_lon","shape_pt_sequence","shape_dist_traveled")
                 .fieldSetMapper(fieldSet -> {
+                    ShapeKey sk = new ShapeKey();
+                    sk.setShapeId(fieldSet.readString("shape_id"));
+                    sk.setShapePtSeq(fieldSet.readInt("shape_pt_sequence"));
+
                     Shape s = new Shape();
-                    s.setShapeId(fieldSet.readString("shape_id"));
+                    s.setId(sk);
                     s.setShapePtLat(fieldSet.readString("shape_pt_lat"));
                     s.setShapePtLon(fieldSet.readString("shape_pt_lon"));
-                    s.setShapePtSeq(fieldSet.readInt("shape_pt_sequence"));
                     s.setShapeDistTraveled(fieldSet.readString("shape_dist_traveled"));
                     return s;
                 })
@@ -64,8 +68,6 @@ public class ShapeJobConfig extends BaseJobConfig {
         return shapes -> {
             if (verbose) {
                 shapes.forEach(s -> log.info("Saving Shape Records: " + s.toString()));
-            } else {
-                log.info("Saving Shape Records...");
             }
             shapeRepository.saveAll(shapes);
         };

@@ -1,23 +1,20 @@
 package org.vinci.busfinder.model;
 
 import jakarta.persistence.*;
+import org.vinci.busfinder.model.key.ShapeKey;
 
 @Entity
 @Table(name = "shapes")
 public class Shape {
 
-    @Id
-    @Column(name = "shape_id")
-    private String shapeId;
+    @EmbeddedId
+    private ShapeKey id;
 
     @Column(name = "shape_pt_lat")
     private String shapePtLat;
 
     @Column(name = "shape_pt_lon")
     private String shapePtLon;
-
-    @Column(name = "shape_pt_sequence")
-    private int shapePtSeq;
 
     @Column(name = "shape_dist_traveled")
     private String shapeDistTraveled;
@@ -29,16 +26,16 @@ public class Shape {
         return String.format(
                 "Shape[shape_id=%s, shape_pt_lat=%s, shape_pt_lon=%s, shape_pt_sequence=%s, " +
                         "shape_dist_traveled=%ss]",
-                shapeId, shapePtLat, shapePtLon, shapePtSeq,shapeDistTraveled
+                id.getShapeId(), shapePtLat, shapePtLon, id.getShapePtSeq(),shapeDistTraveled
         );
     }
 
-    public String getShapeId() {
-        return shapeId;
+    public ShapeKey getId() {
+        return id;
     }
 
-    public void setShapeId(String shapeId) {
-        this.shapeId = shapeId;
+    public void setId(ShapeKey id) {
+        this.id = id;
     }
 
     public String getShapePtLat() {
@@ -55,14 +52,6 @@ public class Shape {
 
     public void setShapePtLon(String shapePtLon) {
         this.shapePtLon = shapePtLon;
-    }
-
-    public int getShapePtSeq() {
-        return shapePtSeq;
-    }
-
-    public void setShapePtSeq(int shapePtSeq) {
-        this.shapePtSeq = shapePtSeq;
     }
 
     public String getShapeDistTraveled() {

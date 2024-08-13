@@ -73,8 +73,6 @@ public class StopJobConfig extends BaseJobConfig {
         return stops -> {
             if (verbose) {
                 stops.forEach(s -> log.info("Saving Stop Records: " + s.toString()));
-            } else {
-                log.info("Saving Stop Records...");
             }
             stopRepository.saveAll(stops);
         };

@@ -76,8 +76,6 @@ public class StopTimesJobConfig extends BaseJobConfig {
         return stopTimes -> {
             if (verbose) {
                 stopTimes.forEach(a -> log.info("Saving StopTimes Records: " + a.toString()));
-            } else {
-                log.info("Saving StopTimes Records...");
             }
             stopTimesRepository.saveAll(stopTimes);
         };

@@ -68,8 +68,6 @@ public class RouteJobConfig extends BaseJobConfig {
         return routes -> {
             if (verbose) {
                 routes.forEach(r -> log.info("Saving Route Records: " + r.toString()));
-            } else {
-                log.info("Saving Route Records...");
             }
             routeRepository.saveAll(routes);
         };

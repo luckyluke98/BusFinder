@@ -67,8 +67,6 @@ public class AgencyJobConfig extends BaseJobConfig {
         return agencies -> {
             if (verbose) {
                 agencies.forEach(a -> log.info("Saving Agency Records: " + a.toString()));
-            } else {
-                log.info("Saving Agency Records...");
             }
             agencyRepository.saveAll(agencies);
         };

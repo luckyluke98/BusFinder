@@ -72,8 +72,6 @@ public class CalendarJobConfig extends BaseJobConfig {
         return calendars -> {
             if (verbose) {
                 calendars.forEach(c -> log.info("Saving Calendar Records: " + c.toString()));
-            } else {
-                log.info("Saving Calendar Records...");
             }
             calendarRepository.saveAll(calendars);
         };

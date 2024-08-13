@@ -70,8 +70,6 @@ public class TripJobConfig extends BaseJobConfig {
         return trips -> {
             if (verbose) {
                 trips.forEach(s -> log.info("Saving Trip Records: " + s.toString()));
-            } else {
-                log.info("Saving Trip Records...");
             }
             tripRepository.saveAll(trips);
         };
