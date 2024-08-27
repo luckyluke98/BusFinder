@@ -74,6 +74,7 @@ public class PathFinder {
         int tHour = t1Hours + t2Hours + tHCurry;
 
         return tHour + ":" + tMin + ":" + tSeconds;
+
     }
 
     private int compareTime(String t1, String t2) {
