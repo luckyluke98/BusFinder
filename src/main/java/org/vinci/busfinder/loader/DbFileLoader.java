@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
+import org.vinci.busfinder.pathfinder.GraphDataManger;
 
 
 @Component
@@ -17,6 +18,9 @@ public class DbFileLoader implements CommandLineRunner {
 
     @Value("${dbloader.config.load}")
     private Boolean load;
+
+    @Value("${dbloader.config.load-in-memory}")
+    private Boolean loadInMemory;
 
     @Autowired
     private JobLauncher jobLauncher;
@@ -49,6 +53,9 @@ public class DbFileLoader implements CommandLineRunner {
     @Autowired
     private Job load_stoptimes_table;
 
+    @Autowired
+    GraphDataManger gdm;
+
     @Override
     public void run(String... args) throws Exception {
         if (Boolean.TRUE.equals(load)) {
@@ -59,6 +66,10 @@ public class DbFileLoader implements CommandLineRunner {
             jobLauncher.run(load_stop_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
             jobLauncher.run(load_trip_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
             jobLauncher.run(load_stoptimes_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
+        }
+
+        if (Boolean.TRUE.equals(loadInMemory)) {
+            gdm.load();
         }
     }
 }
