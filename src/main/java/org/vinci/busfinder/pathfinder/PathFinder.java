@@ -50,8 +50,6 @@ public class PathFinder {
         }
 
         visitedStop[curStopId] = false;
-        /////
-
     }
 
     private String timeAdd(String time1, String time2) {
