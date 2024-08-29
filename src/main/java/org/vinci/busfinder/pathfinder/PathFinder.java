@@ -48,7 +48,6 @@ public class PathFinder {
                 findAllPathRec(adj, path_p, visitedStop);
             }
         }
-
         visitedStop[curStopId] = false;
     }
 
