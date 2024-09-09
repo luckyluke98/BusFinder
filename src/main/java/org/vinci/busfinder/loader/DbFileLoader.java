@@ -19,9 +19,6 @@ public class DbFileLoader implements CommandLineRunner {
     @Value("${dbloader.config.load}")
     private Boolean load;
 
-    @Value("${dbloader.config.load-in-memory}")
-    private Boolean loadInMemory;
-
     @Autowired
     private JobLauncher jobLauncher;
 
@@ -67,9 +64,6 @@ public class DbFileLoader implements CommandLineRunner {
             jobLauncher.run(load_trip_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
             jobLauncher.run(load_stoptimes_table, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
         }
-
-        if (Boolean.TRUE.equals(loadInMemory)) {
-            gdm.load();
-        }
+        gdm.load();
     }
 }

@@ -3,10 +3,7 @@ package org.vinci.busfinder.pathfinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.stereotype.Component;
-import org.vinci.busfinder.model.Route;
-import org.vinci.busfinder.model.StopTimes;
 import org.vinci.busfinder.repository.RouteRepository;
 import org.vinci.busfinder.repository.StopRepository;
 import org.vinci.busfinder.repository.StopTimesRepository;
@@ -21,10 +18,11 @@ public class GraphDataManger {
 
     private static GraphDataManger instance;
 
-    private HashMap<Integer, List<Integer>> tripsPerStop;
     private HashMap<Integer, List<Integer>> tripsPerRoute;
     private HashMap<Integer, List<Integer>> routeStop;
     private HashMap<Integer, HashMap<Integer, List<Integer>>> stopNetwork;
+
+    private HashMap<Integer, HashMap<Integer, List<Integer>>> cachedStartStop;
 
     @Autowired
     private StopTimesRepository stopTimesRepository;
@@ -39,17 +37,14 @@ public class GraphDataManger {
     private RouteRepository routeRepository;
 
     private GraphDataManger() {
-        tripsPerStop = new HashMap<>();
         tripsPerRoute = new HashMap<>();
         routeStop = new HashMap<>();
         stopNetwork = new HashMap<>();
+        cachedStartStop = new HashMap<>();
     }
 
     public void load() {
-        log.info("==========================================================");
-        log.info("Loading graph data manager ... ");
 
-        tripsPerStop.clear();
         tripsPerRoute.clear();
         routeStop.clear();
         stopNetwork.clear();
@@ -57,7 +52,6 @@ public class GraphDataManger {
         List<Integer> stopIds = stopRepository.findAllStopId();
         List<Integer> routeIds = routeRepository.findAllRouteId();
 
-        log.info("Loading tripsPerRoute and routeStop index ...");
         for (Integer routeId : routeIds) {
             List<Integer> tripIdsByRoute = tripRepository.findTripIdsByRouteId(routeId);
             tripsPerRoute.put(routeId, tripIdsByRoute);
@@ -67,7 +61,6 @@ public class GraphDataManger {
             routeStop.put(routeId, stops);
         }
 
-        log.info("Loading stop's graph ...");
         for (Integer stop : stopIds) {
             stopNetwork.put(stop, new HashMap<>());
         }
@@ -86,16 +79,12 @@ public class GraphDataManger {
                 }
             }
         }
-
-        log.info("Loading ended!");
-
-        stopNetwork.forEach((k,v) -> {
-            v.forEach((k1,v1) -> {
-                System.out.println(k+": "+k1+": "+v1);
-            });
-
-        });
-
+//        stopNetwork.forEach((k,v) -> {
+//            v.forEach((k1,v1) -> {
+//                System.out.println(k+": "+k1+": "+v1);
+//            });
+//
+//        });
     }
 
     public static GraphDataManger getInstance() {
@@ -103,10 +92,6 @@ public class GraphDataManger {
             instance = new GraphDataManger();
         }
         return instance;
-    }
-
-    public HashMap<Integer, List<Integer>> getTripsPerStop() {
-        return tripsPerStop;
     }
 
     public HashMap<Integer, List<Integer>> getTripsPerRoute() {
@@ -119,5 +104,13 @@ public class GraphDataManger {
 
     public HashMap<Integer, HashMap<Integer, List<Integer>>> getStopNetwork() {
         return stopNetwork;
+    }
+
+    public HashMap<Integer, HashMap<Integer, List<Integer>>> getCachedStartStop() {
+        return cachedStartStop;
+    }
+
+    public void setCachedStartStop(HashMap<Integer, HashMap<Integer, List<Integer>>> cachedStartStop) {
+        this.cachedStartStop = cachedStartStop;
     }
 }

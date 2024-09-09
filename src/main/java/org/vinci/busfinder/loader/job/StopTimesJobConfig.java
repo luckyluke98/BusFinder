@@ -24,8 +24,6 @@ import org.vinci.busfinder.repository.StopTimesRepository;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 @Configuration
 public class StopTimesJobConfig extends BaseJobConfig {

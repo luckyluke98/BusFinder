@@ -1,6 +1,5 @@
 package org.vinci.busfinder.dto;
 
-
 public class TripDto {
 
     private int tripId;

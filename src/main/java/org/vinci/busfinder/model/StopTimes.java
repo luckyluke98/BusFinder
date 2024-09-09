@@ -3,8 +3,6 @@ package org.vinci.busfinder.model;
 import jakarta.persistence.*;
 import org.vinci.busfinder.model.key.StopTimesKey;
 
-import java.time.LocalTime;
-
 @Entity
 @Table(name = "stop_times")
 public class StopTimes {
