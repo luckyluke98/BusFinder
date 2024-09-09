@@ -1,9 +1,10 @@
 package org.vinci.busfinder.pathfinder;
 
+import jakarta.persistence.Tuple;
+import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class PathFinder {
 
@@ -12,15 +13,19 @@ public class PathFinder {
     private String departureTime;
 
     private List<Path> paths;
+    PriorityQueue<Pair<Integer, List<Integer>>> topTratte;
+
+    private final int HEAP_TOP_DIM = 10;
 
     @Autowired
     private GraphDataManger gdm;
 
     public PathFinder() {
         this.paths = new ArrayList<>();
+        this.topTratte = new PriorityQueue<>(Comparator.comparingInt(a -> a.a));
     }
 
-    public List<Path> findAllPaths() {
+    public List<Pair<Integer, List<Integer>>> findAllPaths() {
         Path path = new Path();
         boolean[] visitedStop = new boolean[gdm.getStopNetwork().keySet().stream().max(Integer::compare).get()];
 
@@ -28,7 +33,78 @@ public class PathFinder {
 
         findAllPathRec(startStopId, path, visitedStop);
 
-        return paths;
+        Collections.sort(paths, Comparator.comparingInt(p -> p.getStops().size()));
+
+        for (Path p : this.paths.subList(0,5)) {
+            List<List<Integer>> conns = new ArrayList<>();
+
+            for (int i = 0; i < p.getStops().size(); i++) {
+                if (i + 1 < p.getStops().size()) {
+                    List<Integer> conn = gdm.getStopNetwork().get(p.getStops().get(i)).get(p.getStops().get(i + 1));
+                    if (Objects.nonNull(conn))
+                        conns.add(conn);
+                }
+            }
+
+            findComb(conns);
+
+            break;
+
+        }
+
+        List<Pair<Integer, List<Integer>>> res = new ArrayList<>();
+        res.add(topTratte.peek());
+
+        return res;
+    }
+
+    private void findComb(List<List<Integer>> conns) {
+        List<Integer> comb = new ArrayList<>();
+
+        findCombRec(conns, comb, 0);
+
+    }
+
+    private void findCombRec(List<List<Integer>> conns, List<Integer> comb, int index) {
+        if (index >= conns.size()) {
+            return;
+        }
+
+        for (int i = 0; i < conns.get(index).size(); i++) {
+            comb.add(conns.get(index).get(i));
+
+            findCombRec(conns, comb, index + 1);
+
+            if (index == conns.size() - 1) {
+                int s = score(comb);
+                topTratte.add(new Pair<>(s, new ArrayList<>(comb)));
+                System.out.println(s+": "+comb);
+                System.out.println(topTratte.size());
+            }
+            comb.removeLast();
+        }
+    }
+
+    private Pair<Integer, List<Integer>> findMax() {
+        Pair<Integer, List<Integer>> max = topTratte.peek();
+        for (Pair<Integer, List<Integer>> p : topTratte) {
+            if (max.a < p.a)
+                max = p;
+        }
+        return max;
+    }
+
+    private int score(List<Integer> comb) {
+        int score = 0;
+
+        for (int i = 0; i < comb.size(); i++) {
+            if (i + 1 < comb.size()) {
+                if (!Objects.equals(comb.get(i), comb.get(i + 1))) {
+                    score ++;
+                }
+            }
+        }
+        return score;
     }
 
     private void findAllPathRec(int curStopId, Path path, boolean[] visitedStop) {
@@ -41,11 +117,12 @@ public class PathFinder {
         Path path_p = new Path(path);
         visitedStop[curStopId] = true;
 
-        for (Integer adj : gdm.getStopNetwork().get(curStopId)) {
+        for (Integer adj : gdm.getStopNetwork().get(curStopId).keySet()) {
             if (!visitedStop[adj]) {
 
                 path_p.add(adj);
                 findAllPathRec(adj, path_p, visitedStop);
+                path_p.removeLast();
             }
         }
         visitedStop[curStopId] = false;

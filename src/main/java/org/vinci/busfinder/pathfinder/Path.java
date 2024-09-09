@@ -21,6 +21,10 @@ public class Path {
         return stops.add(st);
     }
 
+    public void removeLast() {
+        stops.removeLast();
+    }
+
     public List<Integer> getStops() {
         return stops;
     }

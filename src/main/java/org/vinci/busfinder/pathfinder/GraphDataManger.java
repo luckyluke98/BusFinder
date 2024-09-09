@@ -12,9 +12,7 @@ import org.vinci.busfinder.repository.StopRepository;
 import org.vinci.busfinder.repository.StopTimesRepository;
 import org.vinci.busfinder.repository.TripRepository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class GraphDataManger {
@@ -25,10 +23,8 @@ public class GraphDataManger {
 
     private HashMap<Integer, List<Integer>> tripsPerStop;
     private HashMap<Integer, List<Integer>> tripsPerRoute;
-    private HashMap<Integer, List<StopTimes>> routeStop;
-    private HashMap<Integer, List<Integer>> stopNetwork;
-
-    private Boolean inMemory;
+    private HashMap<Integer, List<Integer>> routeStop;
+    private HashMap<Integer, HashMap<Integer, List<Integer>>> stopNetwork;
 
     @Autowired
     private StopTimesRepository stopTimesRepository;
@@ -47,12 +43,12 @@ public class GraphDataManger {
         tripsPerRoute = new HashMap<>();
         routeStop = new HashMap<>();
         stopNetwork = new HashMap<>();
-        inMemory = false;
     }
 
     public void load() {
         log.info("==========================================================");
         log.info("Loading graph data manager ... ");
+
         tripsPerStop.clear();
         tripsPerRoute.clear();
         routeStop.clear();
@@ -67,35 +63,38 @@ public class GraphDataManger {
             tripsPerRoute.put(routeId, tripIdsByRoute);
 
             int trip = tripIdsByRoute.getFirst();
-            List<StopTimes> stopTimes = stopTimesRepository.findByTripId(trip);
-            routeStop.put(routeId, stopTimes);
+            List<Integer> stops = stopTimesRepository.findStopIdsByTripId(trip);
+            routeStop.put(routeId, stops);
         }
 
-        stopIds.forEach(stop -> {
-            stopNetwork.put(stop, new ArrayList<Integer>());
-        });
+        log.info("Loading stop's graph ...");
+        for (Integer stop : stopIds) {
+            stopNetwork.put(stop, new HashMap<>());
+        }
 
-        routeStop.forEach((k,v) -> {
-            for (int i = 0; i < v.size(); i++) {
-                if (i + 1 < v.size()) {
-                    if (!stopNetwork.get(v.get(i).getId().getStopId()).contains(v.get(i+1).getId().getStopId())) {
-                        stopNetwork.get(v.get(i).getId().getStopId()).add(v.get(i+1).getId().getStopId());
+        for (Map.Entry<Integer, List<Integer>> entry : routeStop.entrySet()) {
+            Integer routeId = entry.getKey();
+            List<Integer> stops = entry.getValue();
+            for (int i = 0; i < stops.size(); i++) {
+                if (i + 1 < stops.size()) {
+                    HashMap<Integer, List<Integer>> map = stopNetwork.get(stops.get(i));
+                    if (!map.containsKey(stops.get(i + 1))) {
+                        map.put(stops.get(i + 1), new ArrayList<>());
                     }
+
+                    map.get(stops.get(i + 1)).add(routeId);
                 }
             }
-        });
+        }
 
         log.info("Loading ended!");
 
         stopNetwork.forEach((k,v) -> {
-            System.out.print(k+": ");
-            v.forEach(s -> {
-                System.out.print(s+" ");
+            v.forEach((k1,v1) -> {
+                System.out.println(k+": "+k1+": "+v1);
             });
-            System.out.println();
-        });
 
-        inMemory = true;
+        });
 
     }
 
@@ -114,15 +113,11 @@ public class GraphDataManger {
         return tripsPerRoute;
     }
 
-    public HashMap<Integer, List<StopTimes>> getRouteStop() {
+    public HashMap<Integer, List<Integer>> getRouteStop() {
         return routeStop;
     }
 
-    public Boolean getInMemory() {
-        return inMemory;
-    }
-
-    public HashMap<Integer, List<Integer>> getStopNetwork() {
+    public HashMap<Integer, HashMap<Integer, List<Integer>>> getStopNetwork() {
         return stopNetwork;
     }
 }
