@@ -20,11 +20,8 @@ public class GraphDataManger {
 
     private HashMap<Integer, List<Integer>> tripsPerRoute;
     private HashMap<Integer, List<Integer>> routeStop;
-    private HashMap<Integer, HashMap<Integer, List<Integer>>> stopNetwork;
 
-    private HashMap<Integer, HashMap<Integer, List<Integer>>> cachedStartStop;
-
-    private int numStopNodes;
+    private GraphModel tripGraph;
 
     @Autowired
     private StopTimesRepository stopTimesRepository;
@@ -41,15 +38,14 @@ public class GraphDataManger {
     private GraphDataManger() {
         tripsPerRoute = new HashMap<>();
         routeStop = new HashMap<>();
-        stopNetwork = new HashMap<>();
-        cachedStartStop = new HashMap<>();
+        tripGraph = new GraphModel();
     }
 
     public void load() {
 
         tripsPerRoute.clear();
         routeStop.clear();
-        stopNetwork.clear();
+        tripGraph.clear();
 
         List<Integer> stopIds = stopRepository.findAllStopId();
         List<Integer> routeIds = routeRepository.findAllRouteId();
@@ -63,58 +59,23 @@ public class GraphDataManger {
             routeStop.put(routeId, stops);
         }
 
-        for (Integer stop : stopIds) {
-            stopNetwork.put(stop, new HashMap<>());
-        }
+        stopIds.forEach(stop -> tripGraph.addNode(stop));
 
         for (Map.Entry<Integer, List<Integer>> entry : routeStop.entrySet()) {
             Integer routeId = entry.getKey();
             List<Integer> stops = entry.getValue();
             for (int i = 0; i < stops.size(); i++) {
                 if (i + 1 < stops.size()) {
-                    HashMap<Integer, List<Integer>> map = stopNetwork.get(stops.get(i));
-                    if (!map.containsKey(stops.get(i + 1))) {
-                        map.put(stops.get(i + 1), new ArrayList<>());
-                    }
-
-                    map.get(stops.get(i + 1)).add(routeId);
+                    tripGraph.addEdge(stops.get(i), stops.get(i + 1), routeId);
                 }
             }
         }
 
-        numStopNodes = stopNetwork.keySet().stream().max(Integer::compare).get() + 1;
-
-        printGraph();
+        tripGraph.printGraph();
     }
 
-    public boolean isCached(int stop) {
-        return cachedStartStop.containsKey(stop);
-    }
-
-    public List<Integer> getCachedStartStop(int startStop, int endStop) {
-        return isCached(startStop)
-                ? cachedStartStop.get(startStop).get(endStop)
-                : new ArrayList<>();
-    }
-
-    public void cacheStartStop(int startStop, HashMap<Integer, List<Integer>> paths) {
-        cachedStartStop.put(startStop, paths);
-    }
-
-    public boolean containsStop(int stop) {
-        return stopNetwork.containsKey(stop);
-    }
-
-    public HashMap<Integer, List<Integer>> getStopFromGraph(int stop){
-        return stopNetwork.get(stop);
-    }
-
-    public boolean areAdjacentStops(int startStop, int endStop) {
-        return containsStop(startStop) && getStopFromGraph(startStop).containsKey(endStop);
-    }
-
-    public int getNumStopNodes() {
-        return numStopNodes;
+    public HashMap<Integer, List<Integer>> getStop(int stop){
+        return tripGraph.getNode(stop);
     }
 
     public static GraphDataManger getInstance() {
@@ -132,15 +93,6 @@ public class GraphDataManger {
         return false;
     }
 
-    public void printGraph(){
-        stopNetwork.forEach((k,v) -> {
-            v.forEach((k1,v1) -> {
-                System.out.println(k+": "+k1+": "+v1);
-            });
-
-        });
-    }
-
     public HashMap<Integer, List<Integer>> getTripsPerRoute() {
         return tripsPerRoute;
     }
@@ -149,15 +101,7 @@ public class GraphDataManger {
         return routeStop;
     }
 
-    public HashMap<Integer, HashMap<Integer, List<Integer>>> getStopNetwork() {
-        return stopNetwork;
-    }
-
-    public HashMap<Integer, HashMap<Integer, List<Integer>>> getCachedStartStop() {
-        return cachedStartStop;
-    }
-
-    public void setCachedStartStop(HashMap<Integer, HashMap<Integer, List<Integer>>> cachedStartStop) {
-        this.cachedStartStop = cachedStartStop;
+    public List<Integer> shortestPath(int src, int dst) {
+        return tripGraph.shortestPath(src, dst);
     }
 }

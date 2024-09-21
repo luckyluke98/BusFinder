@@ -1,22 +1,22 @@
 package org.vinci.busfinder.pathfinder;
 
-import org.springframework.data.relational.core.sql.In;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 public class GraphModel {
 
     private HashMap<Integer, HashMap<Integer, List<Integer>>> graph;
+    private HashMap<Integer, HashMap<Integer, List<Integer>>> cachedShortestPath;
 
     public GraphModel() {
         graph = new HashMap<>();
+        cachedShortestPath = new HashMap<>();
     }
 
     public GraphModel(List<Integer> nodes) {
         graph = new HashMap<>();
+        cachedShortestPath = new HashMap<>();
         for (Integer node : nodes) {
             graph.put(node, new HashMap<>());
         }
@@ -59,6 +59,11 @@ public class GraphModel {
     }
 
     public List<Integer> shortestPath(int startNode, int endNode) {
+        //Se il calcolo è stato cachato allora lo recuperiamo
+        if (isShortestPathCached(startNode)) {
+            return getCachedShortestPath(startNode, endNode);
+        }
+
         int numNodes = getMaxValueNode();
         int[] dist = new int[numNodes];
 
@@ -96,7 +101,29 @@ public class GraphModel {
                 }
             }
         }
+        cacheShortestPath(startNode, paths);
         return paths.get(endNode);
+    }
+
+    public int getNumberOfNodes() {
+        return graph.size();
+    }
+
+    public int getMaxValueNode() {
+        return graph.keySet().stream().max(Integer::compare).get() + 1;
+    }
+
+    public List<Integer> getNodes() {
+        return graph.keySet().stream().toList();
+    }
+
+    public void clear() {
+        graph.clear();
+        cachedShortestPath.clear();
+    }
+
+    public HashMap<Integer, List<Integer>> getNode(int node) {
+        return graph.get(node);
     }
 
     private int minDistance(int[] dist, Boolean[] sptSet, int numNodes) {
@@ -110,20 +137,28 @@ public class GraphModel {
         return min_index;
     }
 
-    public boolean areAdjacentNodes(int startNode, int endNode) {
+    private boolean areAdjacentNodes(int startNode, int endNode) {
         return graph.containsKey(startNode) && graph.get(startNode).containsKey(endNode);
     }
 
-    public int getNumberOfNodes() {
-        return graph.size();
+    private boolean isShortestPathCached(int node) {
+        return cachedShortestPath.containsKey(node);
     }
 
-    public int getMaxValueNode() {
-        return graph.keySet().stream().max(Integer::compare).get() + 1;
+    private List<Integer> getCachedShortestPath(int startNode, int endNode) {
+        return cachedShortestPath.get(startNode).get(endNode);
     }
 
-    public List<Integer> getNodes() {
-        return graph.keySet().stream().toList();
+    private void cacheShortestPath(int startNode, HashMap<Integer, List<Integer>> paths) {
+        cachedShortestPath.put(startNode, paths);
+    }
+
+    public void printGraph(){
+        graph.forEach((k,v) -> {
+            v.forEach((k1,v1) -> {
+                System.out.println(k+": "+k1+": "+v1);
+            });
+        });
     }
 
 }
