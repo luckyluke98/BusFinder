@@ -24,6 +24,8 @@ public class GraphDataManger {
 
     private HashMap<Integer, HashMap<Integer, List<Integer>>> cachedStartStop;
 
+    private int numStopNodes;
+
     @Autowired
     private StopTimesRepository stopTimesRepository;
 
@@ -79,12 +81,40 @@ public class GraphDataManger {
                 }
             }
         }
-//        stopNetwork.forEach((k,v) -> {
-//            v.forEach((k1,v1) -> {
-//                System.out.println(k+": "+k1+": "+v1);
-//            });
-//
-//        });
+
+        numStopNodes = stopNetwork.keySet().stream().max(Integer::compare).get() + 1;
+
+        printGraph();
+    }
+
+    public boolean isCached(int stop) {
+        return cachedStartStop.containsKey(stop);
+    }
+
+    public List<Integer> getCachedStartStop(int startStop, int endStop) {
+        return isCached(startStop)
+                ? cachedStartStop.get(startStop).get(endStop)
+                : new ArrayList<>();
+    }
+
+    public void cacheStartStop(int startStop, HashMap<Integer, List<Integer>> paths) {
+        cachedStartStop.put(startStop, paths);
+    }
+
+    public boolean containsStop(int stop) {
+        return stopNetwork.containsKey(stop);
+    }
+
+    public HashMap<Integer, List<Integer>> getStopFromGraph(int stop){
+        return stopNetwork.get(stop);
+    }
+
+    public boolean areAdjacentStops(int startStop, int endStop) {
+        return containsStop(startStop) && getStopFromGraph(startStop).containsKey(endStop);
+    }
+
+    public int getNumStopNodes() {
+        return numStopNodes;
     }
 
     public static GraphDataManger getInstance() {
@@ -92,6 +122,23 @@ public class GraphDataManger {
             instance = new GraphDataManger();
         }
         return instance;
+    }
+
+    public boolean leadsTo(int route, int src, int dst) {
+        List<Integer> routeStop = getRouteStop().get(route);
+        if (routeStop.contains(dst)) {
+            return routeStop.indexOf(src) <= routeStop.indexOf(dst);
+        }
+        return false;
+    }
+
+    public void printGraph(){
+        stopNetwork.forEach((k,v) -> {
+            v.forEach((k1,v1) -> {
+                System.out.println(k+": "+k1+": "+v1);
+            });
+
+        });
     }
 
     public HashMap<Integer, List<Integer>> getTripsPerRoute() {

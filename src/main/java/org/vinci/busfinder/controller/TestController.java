@@ -16,12 +16,8 @@ public class TestController {
 
 
     @GetMapping("algo")
-    public List<Integer> test3(@RequestParam int i) {
-        pathFinder.setStartStopId(4594);
-        pathFinder.setEndStopId(4559);
-        pathFinder.setDepartureTime("13:00:00");
-
-        return pathFinder.shortestPath();
+    public List<Integer> test3(@RequestParam int start, @RequestParam int end) {
+        return pathFinder.findPaths(start, end, null);
     }
 
 }

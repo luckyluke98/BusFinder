@@ -6,29 +6,79 @@ import java.util.*;
 
 public class PathFinder {
 
-    private int startStopId;
-    private int endStopId;
-    private String departureTime;
-
     @Autowired
     private GraphDataManger gdm;
 
-    public PathFinder() {
-    }
+    public PathFinder() {}
 
-    public List<Integer> shortestPath() {
+    public List<Integer> findPaths(int startStopId, int endStopId, String departureTime) {
+        List<Integer> sp = shortestPath(startStopId, endStopId);
 
-        if (gdm.getCachedStartStop().containsKey(startStopId)) {
-            return gdm.getCachedStartStop().get(startStopId).get(endStopId);
+        if (Objects.isNull(sp)) {
+            return null;
         }
 
-        int numNodes = gdm.getStopNetwork().keySet().stream().max(Integer::compare).get() + 1;
+        HashMap<Integer, HashMap<Integer, List<Integer>>> stg = new HashMap<>();
+        sp.forEach(stop -> {
+            stg.put(stop, new HashMap<>());
+        });
+
+        for (int i = 0; i < sp.size() - 1; i++) {
+            List<Integer> routeIdsFromStop = new ArrayList<>();
+
+            gdm.getStopFromGraph(sp.get(i)).forEach((id, list) -> {
+                list.forEach(r -> {
+                    if (!routeIdsFromStop.contains(r)) {
+                        routeIdsFromStop.add(r);
+                    }
+                });
+            });
+
+            HashMap<Integer, List<Integer>> map = stg.get(sp.get(i));
+
+            for (int j = i + 1; j < sp.size(); j++) {
+                map.put(sp.get(j), new ArrayList<>());
+
+                for (Integer r : routeIdsFromStop) {
+                    if (gdm.leadsTo(r, sp.get(i), sp.get(j))) {
+                        map.get(sp.get(j)).add(r);
+                    }
+                }
+
+            }
+        }
+
+        System.out.println("**********************");
+
+
+
+        stg.forEach((k,v) -> {
+            v.forEach((k1,v1) -> {
+                System.out.println(k+": "+k1+": "+v1);
+            });
+
+        });
+
+        return sp;
+    }
+
+    public List<Integer> shortestPath(int startStopId, int endStopId) { //Dijkstra based
+        //If the startStop is in cache retrieve that
+        if (gdm.isCached(startStopId)) {
+            return gdm.getCachedStartStop(startStopId, endStopId);
+        }
+
+        int numNodes = gdm.getNumStopNodes();
         int[] dist = new int[numNodes];
 
         HashMap<Integer, List<Integer>> paths = new HashMap<>();
 
+        //Initialize for each stop the corresponding shortest path list
         for (int i = 0; i < numNodes; i++) {
             paths.put(i, new ArrayList<>());
+            if (i == endStopId) {
+                paths.get(i).add(startStopId);
+            }
         }
 
         Boolean[] sptSet = new Boolean[numNodes];
@@ -41,14 +91,11 @@ public class PathFinder {
         dist[startStopId] = 0;
 
         for (int count = 0; count < numNodes; count++) {
-
             int u = minDistance(dist, sptSet, numNodes);
-
             sptSet[u] = true;
 
             for (int n = 0; n < numNodes; n++) {
-
-                if (!sptSet[n] && (gdm.getStopNetwork().containsKey(u) && gdm.getStopNetwork().get(u).containsKey(n))
+                if (!sptSet[n] && gdm.areAdjacentStops(u, n)
                         && dist[u] != Integer.MAX_VALUE
                         && dist[u] + 1 < dist[n]) {
                     dist[n] = dist[u] + 1;
@@ -58,7 +105,7 @@ public class PathFinder {
                 }
             }
         }
-        gdm.getCachedStartStop().put(startStopId, paths);
+        gdm.cacheStartStop(startStopId, paths);
         return paths.get(endStopId);
     }
 
@@ -66,34 +113,11 @@ public class PathFinder {
         int min = Integer.MAX_VALUE, min_index = -1;
 
         for (int v = 0; v < numNodes; v++)
-            if (sptSet[v] == false && dist[v] <= min) {
+            if (!sptSet[v] && dist[v] <= min) {
                 min = dist[v];
                 min_index = v;
             }
         return min_index;
     }
 
-    public int getStartStopId() {
-        return startStopId;
-    }
-
-    public void setStartStopId(int startStopId) {
-        this.startStopId = startStopId;
-    }
-
-    public int getEndStopId() {
-        return endStopId;
-    }
-
-    public void setEndStopId(int endStopId) {
-        this.endStopId = endStopId;
-    }
-
-    public String getDepartureTime() {
-        return departureTime;
-    }
-
-    public void setDepartureTime(String departureTime) {
-        this.departureTime = departureTime;
-    }
 }
