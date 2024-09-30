@@ -20,5 +20,12 @@ public interface StopTimesRepository extends JpaRepository<StopTimes, StopTimesK
     @Query("SELECT st.id.tripId FROM StopTimes st WHERE st.id.stopId = ?1 AND st.departureTime BETWEEN ?2 AND ?3")
     public List<Integer> findTripIdByStopIdAndTime(int stopId, String time1, String time2);
 
+    @Query("SELECT st " +
+            "FROM Trip t " +
+            "JOIN StopTimes st ON st.id.tripId = t.tripId " +
+            "WHERE t.routeId = ?1 AND st.id.stopId = ?2 AND st.departureTime >= ?3 " +
+            "ORDER BY st.departureTime LIMIT 1")
+    public StopTimes findDepartureTripsByRouteByStopByTime(int routeId, int stopId, String time);
+
 
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+
 public class GraphModel {
 
     private HashMap<Integer, HashMap<Integer, List<Integer>>> graph;
@@ -35,21 +36,16 @@ public class GraphModel {
             return false;
         }
 
-        // Se la lista degli adiacenti di node1 è vuota allora andiamo a popolarla con node2
         if (graph.get(node1).isEmpty()) {
             graph.get(node1).put(node2, new ArrayList<>());
         }
 
-        //Lista degli adiacenti di node1 non è vuota, se ha come adiacente node2 verifichiamo che link
-        // non sia gia presente nella lista dei link e lo aggiungiamo
         if (graph.get(node1).containsKey(node2)) {
             if (!graph.get(node1).get(node2).contains(link)) {
                 graph.get(node1).get(node2).add(link);
                 return true;
             }
-        }
-        // Se tra gli adiacenti di node1 non c'e' node2, lo inseriamo e quindi anche il link
-        else {
+        } else {
             graph.get(node1).put(node2, new ArrayList<>());
             graph.get(node1).get(node2).add(link);
             return true;
@@ -59,7 +55,6 @@ public class GraphModel {
     }
 
     public List<Integer> shortestPath(int startNode, int endNode) {
-        //Se il calcolo è stato cachato allora lo recuperiamo
         if (isShortestPathCached(startNode)) {
             return getCachedShortestPath(startNode, endNode);
         }

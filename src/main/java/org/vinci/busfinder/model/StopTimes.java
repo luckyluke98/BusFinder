@@ -30,6 +30,33 @@ public class StopTimes {
 
     public StopTimes() {}
 
+    static public int compareTime(String t1, String t2) {
+        if(t1.isEmpty() || t2.isEmpty()) {
+            throw new RuntimeException("t1 or t2 is empty");
+        }
+        String[] t1Split = t1.split(":");
+        String[] t2Split = t2.split(":");
+        if (Integer.parseInt(t1Split[0]) > Integer.parseInt(t2Split[0])) {
+            return -1;
+        } else if (Integer.parseInt(t1Split[0]) < Integer.parseInt(t2Split[0])) {
+            return 1;
+        } else {
+            if (Integer.parseInt(t1Split[1]) > Integer.parseInt(t2Split[1])) {
+                return -1;
+            } else if (Integer.parseInt(t1Split[1]) < Integer.parseInt(t2Split[1])) {
+                return 1;
+            } else {
+                if (Integer.parseInt(t1Split[2]) > Integer.parseInt(t2Split[2])) {
+                    return -1;
+                } else if (Integer.parseInt(t1Split[2]) < Integer.parseInt(t2Split[2])) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        }
+    }
+
     @Override
     public String toString() {
         return String.format(
