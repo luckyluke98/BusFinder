@@ -27,5 +27,8 @@ public interface StopTimesRepository extends JpaRepository<StopTimes, StopTimesK
             "ORDER BY st.departureTime LIMIT 1")
     public StopTimes findDepartureTripsByRouteByStopByTime(int routeId, int stopId, String time);
 
+    @Query("SELECT st FROM StopTimes st WHERE st.id.stopId = ?1 AND st.id.tripId = ?2")
+    public StopTimes findStopTimesByStopIdByTripId(int stopId, int tripId);
+
 
 }

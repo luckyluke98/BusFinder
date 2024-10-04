@@ -1,7 +1,10 @@
 package org.vinci.busfinder.pathfinder;
 
+import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.vinci.busfinder.model.Route;
 import org.vinci.busfinder.model.StopTimes;
+import org.vinci.busfinder.repository.RouteRepository;
 import org.vinci.busfinder.repository.StopTimesRepository;
 
 import java.util.*;
@@ -13,6 +16,9 @@ public class PathFinder {
 
     @Autowired
     private StopTimesRepository stopTimesRepository;
+
+    @Autowired
+    private RouteRepository routeRepository;
 
     public PathFinder() {}
 
@@ -37,21 +43,39 @@ public class PathFinder {
         System.out.println(stgShortestPath);
         System.out.println(linkTrips);
 
-        System.out.println(stopTimesRepository.findDepartureTripsByRouteByStopByTime(4,4639, "06:00:00"));
+        //List<List<StopTimes>> res = new ArrayList<>();
+        TripPath out = new TripPath();
 
         int stop = 0;
         String depTime = departureTime;
         for(List<Integer> linkTrip : linkTrips) {
 
             StopTimes min = stopTimesRepository.findDepartureTripsByRouteByStopByTime(linkTrip.getFirst(), stgShortestPath.get(stop), depTime);
+            int minRouteId = linkTrip.getFirst();
+
             for (int l: linkTrip) {
                 StopTimes att = stopTimesRepository.findDepartureTripsByRouteByStopByTime(l, stgShortestPath.get(stop), depTime);
-                if (StopTimes.compareTime(min.getDepartureTime(), att.getDepartureTime()) < 0)
+
+                if (Objects.nonNull(att) && StopTimes.compareTime(min.getDepartureTime(), att.getDepartureTime()) < 0) {
                     min = att;
+                    minRouteId = l;
+                }
             }
 
+            Route minRoute = routeRepository.findById(minRouteId).get();
+            StopTimes dst = stopTimesRepository.findStopTimesByStopIdByTripId(stgShortestPath.get(stop + 1), min.getId().getTripId());
+            depTime = dst.getArrivalTime();
+
+            //res.add(new ArrayList<>(Arrays.asList(min, dst)));
+            out.addStep(minRoute, min, dst);
+
+            stop++;
         }
 
+        out.getSteps().forEach(s -> {
+            System.out.println(s.getRoute().getRouteShortName() + ":" + s.getStopTimesPair().getSrc() + ", " + s.getStopTimesPair().getDst());
+            System.out.println();
+        });
 
         return sp;
     }
