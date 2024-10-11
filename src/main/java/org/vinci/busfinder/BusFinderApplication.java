@@ -13,9 +13,5 @@ public class BusFinderApplication {
        SpringApplication.run(BusFinderApplication.class, args);
     }
 
-    @Bean
-    public PathFinder pathFinder() {
-        return new PathFinder();
-    }
 
 }

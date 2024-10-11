@@ -2,6 +2,7 @@ package org.vinci.busfinder.pathfinder;
 
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.vinci.busfinder.model.Route;
 import org.vinci.busfinder.model.StopTimes;
 import org.vinci.busfinder.repository.RouteRepository;
@@ -9,6 +10,7 @@ import org.vinci.busfinder.repository.StopTimesRepository;
 
 import java.util.*;
 
+@Component
 public class PathFinder {
 
     @Autowired
@@ -24,26 +26,18 @@ public class PathFinder {
 
     public List<Integer> findPaths(int startStopId, int endStopId, String departureTime) {
         List<Integer> sp = gdm.shortestPath(startStopId, endStopId);
-
-        if (Objects.isNull(sp)) {
-            return null;
-        }
+        sp.addFirst(startStopId);
 
         GraphModel stg = initSTG(sp);
-
         stg.printGraph();
 
         List<Integer> stgShortestPath = stg.shortestPath(startStopId, endStopId);
         List<List<Integer>> linkTrips = new ArrayList<>();
 
-        for (int i = 0; i < stgShortestPath.size()-1; i++) {
-            linkTrips.add(stg.getNode(stgShortestPath.get(i)).get(stgShortestPath.get(i+1)));
+        for (int i = 0; i < stgShortestPath.size() - 1; i++) {
+            linkTrips.add(stg.getNode(stgShortestPath.get(i)).get(stgShortestPath.get(i + 1)));
         }
 
-        System.out.println(stgShortestPath);
-        System.out.println(linkTrips);
-
-        //List<List<StopTimes>> res = new ArrayList<>();
         TripPath out = new TripPath();
 
         int stop = 0;
@@ -65,8 +59,6 @@ public class PathFinder {
             Route minRoute = routeRepository.findById(minRouteId).get();
             StopTimes dst = stopTimesRepository.findStopTimesByStopIdByTripId(stgShortestPath.get(stop + 1), min.getId().getTripId());
             depTime = dst.getArrivalTime();
-
-            //res.add(new ArrayList<>(Arrays.asList(min, dst)));
             out.addStep(minRoute, min, dst);
 
             stop++;
@@ -79,7 +71,6 @@ public class PathFinder {
 
         return sp;
     }
-
 
     private GraphModel initSTG(List<Integer> sp) {
         GraphModel stg = new GraphModel();

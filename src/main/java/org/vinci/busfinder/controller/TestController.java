@@ -16,8 +16,8 @@ public class TestController {
 
 
     @GetMapping("algo")
-    public List<Integer> test3(@RequestParam int start, @RequestParam int end) {
-        return pathFinder.findPaths(start, end, "07:00:00");
+    public List<Integer> test3(@RequestParam int start, @RequestParam int end, @RequestParam String deptime) {
+        return pathFinder.findPaths(start, end, deptime);
     }
 
 }
