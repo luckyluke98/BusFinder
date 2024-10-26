@@ -1,7 +1,5 @@
 package org.vinci.busfinder.dto;
 
-import jakarta.persistence.Column;
-
 public class ShapeDto {
 
     private String shapeId;
