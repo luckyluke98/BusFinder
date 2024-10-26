@@ -67,6 +67,9 @@ public class GraphModel {
         //Initialize for each stop the corresponding shortest path list
         for (int i = 0; i < numNodes; i++) {
             paths.put(i, new ArrayList<>());
+            if (i == endNode) {
+                paths.get(i).add(startNode);
+            }
         }
 
         Boolean[] sptSet = new Boolean[numNodes];

@@ -38,6 +38,9 @@ public class PathFinder {
             linkTrips.add(stg.getNode(stgShortestPath.get(i)).get(stgShortestPath.get(i + 1)));
         }
 
+        System.out.println(stgShortestPath);
+        System.out.println(linkTrips);
+
         TripPath out = new TripPath();
 
         int stop = 0;
