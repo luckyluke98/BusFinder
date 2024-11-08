@@ -1,11 +1,11 @@
 package org.vinci.busfinder.pathfinder;
 
-import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.vinci.busfinder.model.Route;
 import org.vinci.busfinder.model.StopTimes;
 import org.vinci.busfinder.repository.RouteRepository;
+import org.vinci.busfinder.repository.StopRepository;
 import org.vinci.busfinder.repository.StopTimesRepository;
 
 import java.util.*;
@@ -21,10 +21,13 @@ public class PathFinder {
 
     @Autowired
     private RouteRepository routeRepository;
+    
+    @Autowired
+    private StopRepository stopRepository;
 
     public PathFinder() {}
 
-    public List<Integer> findPaths(int startStopId, int endStopId, String departureTime) {
+    public TripPath findPaths(int startStopId, int endStopId, String departureTime) {
         List<Integer> sp = gdm.shortestPath(startStopId, endStopId);
         sp.addFirst(startStopId);
 
@@ -37,9 +40,6 @@ public class PathFinder {
         for (int i = 0; i < stgShortestPath.size() - 1; i++) {
             linkTrips.add(stg.getNode(stgShortestPath.get(i)).get(stgShortestPath.get(i + 1)));
         }
-
-        System.out.println(stgShortestPath);
-        System.out.println(linkTrips);
 
         TripPath out = new TripPath();
 
@@ -62,17 +62,14 @@ public class PathFinder {
             Route minRoute = routeRepository.findById(minRouteId).get();
             StopTimes dst = stopTimesRepository.findStopTimesByStopIdByTripId(stgShortestPath.get(stop + 1), min.getId().getTripId());
             depTime = dst.getArrivalTime();
-            out.addStep(minRoute, min, dst);
+            out.addStep(minRoute, min, dst,
+                    stopRepository.findByStopId(min.getId().getStopId()).getStopName(),
+                    stopRepository.findByStopId(dst.getId().getStopId()).getStopName());
 
             stop++;
         }
 
-        out.getSteps().forEach(s -> {
-            System.out.println(s.getRoute().getRouteShortName() + ":" + s.getStopTimesPair().getSrc() + ", " + s.getStopTimesPair().getDst());
-            System.out.println();
-        });
-
-        return sp;
+        return out;
     }
 
     private GraphModel initSTG(List<Integer> sp) {

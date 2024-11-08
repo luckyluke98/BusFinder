@@ -13,4 +13,7 @@ public interface StopRepository extends JpaRepository<Stop, Integer> {
     @Query("SELECT s.stopId FROM Stop s")
     public List<Integer> findAllStopId();
 
+    @Query("SELECT s FROM Stop s WHERE s.stopId = ?1")
+    public Stop findByStopId(int stopId);
+
 }

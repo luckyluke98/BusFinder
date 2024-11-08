@@ -1,6 +1,5 @@
 package org.vinci.busfinder.pathfinder;
 
-import org.antlr.v4.runtime.misc.Pair;
 import org.vinci.busfinder.model.Route;
 import org.vinci.busfinder.model.StopTimes;
 
@@ -10,26 +9,29 @@ import java.util.List;
 public class TripPath {
 
     public static class Step {
-        private Pair<Route, StopTimesPair> step;
+        private Route route;
+        private StopTimesPair stopTimesPair;
 
         public Step(Route route, StopTimesPair stopTimesPair) {
-            step = new Pair<>(route, stopTimesPair);
-        }
 
-        public Pair<Route, StopTimesPair> getStep() {
-            return step;
-        }
-
-        public void setStep(Pair<Route, StopTimesPair> step) {
-            this.step = step;
+            this.route = route;
+            this.stopTimesPair = stopTimesPair;
         }
 
         public Route getRoute() {
-            return step.a;
+            return route;
         }
 
         public StopTimesPair getStopTimesPair() {
-            return step.b;
+            return stopTimesPair;
+        }
+
+        public void setRoute(Route route) {
+            this.route = route;
+        }
+
+        public void setStopTimesPair(StopTimesPair stopTimesPair) {
+            this.stopTimesPair = stopTimesPair;
         }
 
     }
@@ -38,9 +40,14 @@ public class TripPath {
         private StopTimes src;
         private StopTimes dst;
 
-        public StopTimesPair(StopTimes src, StopTimes dst) {
+        private String srcName;
+        private String dstName;
+
+        public StopTimesPair(StopTimes src, StopTimes dst, String srcName, String dstName) {
             this.src = src;
             this.dst = dst;
+            this.srcName = srcName;
+            this.dstName = dstName;
         }
 
         public StopTimes getSrc() {
@@ -58,6 +65,22 @@ public class TripPath {
         public void setDst(StopTimes dst) {
             this.dst = dst;
         }
+
+        public String getSrcName() {
+            return srcName;
+        }
+
+        public String getDstName() {
+            return dstName;
+        }
+
+        public void setSrcName(String srcName) {
+            this.srcName = srcName;
+        }
+
+        public void setDstName(String dstName) {
+            this.dstName = dstName;
+        }
     }
 
     private List<Step> steps;
@@ -66,8 +89,8 @@ public class TripPath {
         steps = new ArrayList<>();
     }
 
-    public void addStep(Route route, StopTimes src, StopTimes dst) {
-        steps.add(new Step(route, new StopTimesPair(src, dst)));
+    public void addStep(Route route, StopTimes src, StopTimes dst, String srcName, String dstName) {
+        steps.add(new Step(route, new StopTimesPair(src, dst, srcName, dstName)));
     }
 
     public void addStep(Step step) {
