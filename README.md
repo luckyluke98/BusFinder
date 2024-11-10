@@ -21,7 +21,7 @@ dbloader.config.input.trip-file-name=\\trips.txt
 
 Within the configuration files, you can set up the loading of files into the database and various other features.
 
-Se si sta caricando per la prima volta i dati dai txt settare le seguenti proprietà:
+If you are loading data from txt for the first time, set the following properties:
 ```
 dbloader.config.load=true
 ...
