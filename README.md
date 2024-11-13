@@ -60,8 +60,8 @@ The application will return the optimized route with the minimum number of trans
       "stopTimesPair": {
         "src": {...},
         "dst": {...},
-        "srcName": "Faro Rocchetta",
-        "dstName": "Santa Maria Elisabetta"
+        "srcName": "...",
+        "dstName": "..."
       }
     },
 
@@ -71,8 +71,8 @@ The application will return the optimized route with the minimum number of trans
       "stopTimesPair": {
         "src": {...},
         "dst": {...},
-        "srcName": "Santa Maria Elisabetta",
-        "dstName": "San Nicolo' Chiesa"
+        "srcName": "...",
+        "dstName": "..."
       }
     }
   ]
